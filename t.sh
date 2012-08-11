@@ -97,6 +97,7 @@ if [ $command == "start" ]; then
         fi
         echo "timesheet" > $curr
         echo "date $backdate +%Y/%m/%d\ %H:%M:%S >> $curr" | bash
+        echo "started timing"
     else
         echo "the timer is already going."
         exit
