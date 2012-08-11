@@ -6,17 +6,17 @@ weekstart="thursday"
 
 if [[ $# -eq 0 || $1 == "help" ]]; then
     echo -ne \
-        "USAGE:\n" \
-        "start [backdate] -- start timing\n" \
-        "stop [backdate] -- stop timing (prompts for message)\n" \
-        "peek|status -- show time this period\n" \
-        "message message -- describe period\n" \
-        "cancel -- cancel period\n" \
-        "today|day [ago] -- show time today or previous days\n" \
-        "week [ago] -- show time this or past weeks\n" \
-        "all -- show all time recorded\n" \
-        "entry \"startdate\" \"enddate\" message\n" \
-        "help\n"
+"USAGE:\n"\
+"start [backdate] -- start timing\n"\
+"stop [backdate] -- stop timing (prompts for message)\n"\
+"peek|status -- show time this period\n"\
+"message message -- describe period\n"\
+"cancel -- cancel period\n"\
+"today|day [ago] -- show time today or previous days\n"\
+"week [ago] -- show time this or past weeks\n"\
+"all -- show all time recorded\n"\
+"entry \"startdate\" \"enddate\" message\n"\
+"help\n"
     exit
 fi
 
@@ -66,27 +66,22 @@ function dur2str {
         else
             timelabel="hours"
         fi
-        timestr="$hours:"
-    fi
-    if [ $minutes -gt 0 ]; then
-        if [ "$timelabel" == "" ]; then
-            if [[ $minutes -eq 1 && $seconds -eq 0 ]]; then
-                timelabel="minute"
-            else
-                timelabel="minutes"
-            fi
+        printf "%02d:%02d:%02d %s" $hours $minutes $seconds $timelabel
+    elif [ $minutes -gt 0 ]; then
+        if [[ $minutes -eq 1 && $seconds -eq 0 ]]; then
+            timelabel="minute"
+        else
+            timelabel="minutes"
         fi
-        timestr="$timestr$minutes:"
-    fi
-    if [ "$timelabel" == "" ]; then
+        printf "%02d:%02d %s" $minutes $seconds $timelabel
+    else
         if [ $seconds -eq 1 ]; then
             timelabel="second"
         else
             timelabel="seconds"
         fi
+        printf "%d %s" $seconds $timelabel
     fi
-    timestr="$timestr$seconds"
-    echo "$timestr $timelabel"
 }
 
 if [ $command == "start" ]; then
@@ -122,7 +117,6 @@ elif [[ $command == "stop" || $command == "peek" ]]; then
         now=`echo "date $backdate +%Y/%m/%d\ %H:%M:%S" | bash`
         thissec=`echo "date $backdate +%s" | bash`
         duration=$(expr $thissec - $lastsec)
-        echo "duration $(dur2str $duration)"
         lines=`cat $curr | wc -l`
         if [ $command == "stop" ]; then
             if [ "$lines" == "2" ]; then
@@ -142,6 +136,8 @@ elif [[ $command == "stop" || $command == "peek" ]]; then
                 echo "message: `tail -n1 $curr`"
             fi
         fi
+        echo
+        echo "$(dur2str $duration)"
     else
         echo "the timer is not going"
     fi
