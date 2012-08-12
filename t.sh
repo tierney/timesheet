@@ -3,6 +3,7 @@
 file="/home/paul/notes/.timesheet"
 curr="/home/paul/notes/.timesheet.state"
 weekstart="thursday"
+weekhours=40
 
 if [[ $# -eq 0 || $1 == "help" ]]; then
     echo -ne \
@@ -14,7 +15,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "cancel -- cancel period\n"\
 "today|day [ago] -- show time today or previous days\n"\
 "week [ago] -- show time this or past weeks\n"\
-"all -- show all time recorded\n"\
+"left -- show the total and per-day time left"
 "entry \"startdate\" \"enddate\" message\n"\
 "help\n"
     exit
@@ -146,11 +147,12 @@ elif [ $command == "message" ]; then
     if [ -e $curr ]; then
         lines=`cat $curr | wc -l`
         if [ "$lines" == "2" ]; then
-            message=
+            message=$@
             while [ "$message" == "" ]; do
                 read -p "please enter a mesage: " message
             done
             echo "$message" >> $curr
+            echo "message set"
         else
             echo "the message is already set"
             echo "message: `tail -n1 $curr`"
@@ -187,14 +189,14 @@ elif [[ $command == "day" || $command == "week" ]]; then
             fi
             thisduration=$((e - s))
             echo $thisduration >> $tempfile
-            echo $(dur2str $thisduration) `echo $line | cut -d" " -f5-`
+            echo  `echo $line | cut -d" " -f1` $(dur2str $thisduration) `echo $line | cut -d" " -f5-`
         fi
     done
     if [ -e $curr ]; then
         sdate=`head -n2 $curr | tail -n1`
         s=`date -d "$sdate" +%s`
         e=`date +%s`
-        if [[ $s -gt $since && $s -lt $until || $e -gt $since && $e -lt $until ]]; then
+        if [[ $s -gt $since && $s -lt $until || $e -gt $since && $e -le $until ]]; then
             if [[ $s -lt $since ]]; then
                 s=$since
             fi
@@ -213,7 +215,7 @@ elif [[ $command == "day" || $command == "week" ]]; then
     rm $tempfile
     echo
     echo $(dur2str $duration)
-elif [ $command == "all" ]; then
+elif [ $command == "left" ]; then
     echo "not yet implemented"
     exit
 elif [ $command == "entry" ]; then
