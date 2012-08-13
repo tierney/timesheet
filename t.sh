@@ -4,6 +4,7 @@ file="/home/paul/notes/.timesheet"
 curr="/home/paul/notes/.timesheet.state"
 weekstart="thursday"
 weekhours=40
+weekseconds=$((weekhours * 3600))
 
 if [[ $# -eq 0 || $1 == "help" ]]; then
     echo -ne \
@@ -13,11 +14,10 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "peek|status -- show time this period\n"\
 "message message -- describe period\n"\
 "cancel -- cancel period\n"\
-"today|day [ago] -- show time today or previous days\n"\
+"today|yesterday|day [ago] -- show time today or previous days\n"\
 "week [ago] -- show time this or past weeks\n"\
-"left -- show the total and per-day time left"
-"entry \"startdate\" \"enddate\" message\n"\
-"help\n"
+"left|remaining -- show the total and per-day time left\n"\
+"help -- show command help\n"
     exit
 fi
 
@@ -30,6 +30,10 @@ fi
 
 if [ $command == "today" ]; then
     command="day"
+fi
+
+if [ $command == "remaining" ]; then
+    command="left"
 fi
 
 if [ ! -e $file ]; then
@@ -86,23 +90,32 @@ function dur2str {
 }
 
 if [ $command == "start" ]; then
-    if [[ ! -e $curr ]]; then
-        if [ $# -gt 0 ]; then
-            backdate="-d \"$@\""
-            echo "backdating"
-            echo "date $backdate" | bash
-            if [ $? -ne 0 ]; then
-                echo "invalid date. try again."
-                exit
-            fi
-        fi
-        echo "timesheet" > $curr
-        echo "date $backdate +%Y/%m/%d\ %H:%M:%S >> $curr" | bash
-        echo "started timing"
-    else
-        echo "the timer is already going."
-        exit
+    if [[ -e $curr ]]; then
+        read -p "the timer is already going.  start a new one? [Y/n] " yn
+        case "$yn" in
+            n|N)
+                echo "aborted.  did not cancel the timer";
+                exit;
+                ;;
+            *)
+                echo "stopping old timer";
+                $0 stop;
+                echo
+                ;;
+        esac
     fi
+    if [ $# -gt 0 ]; then
+        backdate="-d \"$@\""
+        echo "backdating"
+        echo "date $backdate" | bash
+        if [ $? -ne 0 ]; then
+            echo "invalid date. try again."
+            exit
+        fi
+    fi
+    echo "timesheet" > $curr
+    echo "date $backdate +%Y/%m/%d\ %H:%M:%S >> $curr" | bash
+    echo "started timing"
 elif [[ $command == "stop" || $command == "peek" ]]; then
     if [[ -e $curr ]]; then
         last=`head -n2 $curr | tail -n1`
@@ -167,13 +180,23 @@ elif [ $command == "cancel" ]; then
         y|Y) rm $curr; echo "cancelled timer";;
         *) echo "aborted.  did not cancel the timer";;
     esac
-elif [[ $command == "day" || $command == "week" ]]; then
-    if [ $command == "day" ]; then
-        since=`date -d 00:00 +%s`
-    elif [ $command == "week" ]; then
-        since=`date -d "last $weekstart" +%s`
+elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
+    || $command == "left" ]]; then
+    if [ $command == "yesterday" ]; then
+        since=`date -d "yesterday 00:00" +%s`
+        until=`date -d "yesterday 23:59:59" +%s`
+    else
+        if [ $command == "day" ]; then
+            since=`date -d 00:00 +%s`
+        elif [[ $command == "week" || $command="left" ]]; then
+            since=`date -d "last $weekstart" +%s`
+        fi
+        until=`date +%s`
     fi
-    until=`date +%s`
+    detail=true
+    if [ $command == "left" ]; then
+        detail=false
+    fi
     tempfile=`tempfile -d /tmp/ -p time`
     cat $file | tail -n +2 | while read line; do
         sdate=`echo $line | awk '{print $1, $2}'`
@@ -188,8 +211,11 @@ elif [[ $command == "day" || $command == "week" ]]; then
                 e=$until
             fi
             thisduration=$((e - s))
+            
             echo $thisduration >> $tempfile
-            echo  `echo $line | cut -d" " -f1` $(dur2str $thisduration) `echo $line | cut -d" " -f5-`
+            if [ "$detail" == "true" ]; then
+                echo  `echo $line | cut -d" " -f1` $(dur2str $thisduration) `echo $line | cut -d" " -f5-`
+            fi
         fi
     done
     if [ -e $curr ]; then
@@ -205,7 +231,9 @@ elif [[ $command == "day" || $command == "week" ]]; then
             fi
             thisduration=$((e - s))
             echo $thisduration >> $tempfile
-            echo "$(dur2str $thisduration) (current timer)"
+            if [ "$detail" == "true" ]; then
+                echo "$(dur2str $thisduration) (current timer)"
+            fi
         fi
     fi
     duration=0
@@ -213,12 +241,18 @@ elif [[ $command == "day" || $command == "week" ]]; then
         duration=$((duration + i))
     done
     rm $tempfile
-    echo
-    echo $(dur2str $duration)
+    if [ $command == "left" ]; then
+        left=$((weekseconds - duration))
+        echo "$(dur2str $left) left"
+        daysleft=$(((`date -d "$weekstart" +%w` + 7 - `date +%w`) % 7))
+        echo "$daysleft days left"
+        echo "per day: $(dur2str $((left / daysleft)))"
+        echo "warning: the above value does not yet account for today's hours"
+    else
+        echo
+        echo $(dur2str $duration)
+    fi
 elif [ $command == "left" ]; then
-    echo "not yet implemented"
-    exit
-elif [ $command == "entry" ]; then
     echo "not yet implemented"
     exit
 else
