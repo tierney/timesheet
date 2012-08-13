@@ -14,6 +14,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "peek|status -- show time this period\n"\
 "message message -- describe period\n"\
 "cancel -- cancel period\n"\
+"last -- show the last period\n"\
 "today|yesterday|day [ago] -- show time today or previous days\n"\
 "week [ago] -- show time this or past weeks\n"\
 "left|remaining -- show the total and per-day time left\n"\
@@ -180,6 +181,13 @@ elif [ $command == "cancel" ]; then
         y|Y) rm $curr; echo "cancelled timer";;
         *) echo "aborted.  did not cancel the timer";;
     esac
+elif [ $command == "last" ]; then
+    lines=`cat $file | wc -l`
+    if [ $lines -gt 1 ]; then
+        tail -n1 $file
+    else
+        echo "no timesheet entries"
+    fi
 elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
     || $command == "left" ]]; then
     if [ $command == "yesterday" ]; then
