@@ -18,6 +18,8 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "today|yesterday|day [ago] -- show time today or previous days\n"\
 "week [ago] -- show time this or past weeks\n"\
 "left|remaining -- show the total and per-day time left\n"\
+"perday -- show the average time per-day done and to do\n"\
+"break -- time since last period\n"\
 "help -- show command help\n"
     exit
 fi
@@ -186,7 +188,7 @@ elif [ $command == "last" ]; then
     if [ $lines -gt 1 ]; then
         tail -n1 $file
     else
-        echo "no timesheet entries"
+        echo "no timesheet entries yet"
     fi
 elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
     || $command == "left" ]]; then
@@ -254,15 +256,27 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
         echo "$(dur2str $left) left"
         daysleft=$(((`date -d "$weekstart" +%w` + 7 - `date +%w`) % 7))
         echo "$daysleft days left"
-        echo "per day: $(dur2str $((left / daysleft)))"
-        echo "warning: the above value does not yet account for today's hours"
     else
         echo
         echo $(dur2str $duration)
     fi
-elif [ $command == "left" ]; then
+elif [ $command == "perday" ]; then
     echo "not yet implemented"
     exit
+elif [ $command == "break" ]; then
+    if [ ! -e $curr ]; then
+        lines=`cat $file | wc -l`
+        if [ $lines -gt 1 ]; then
+            last=`tail -n1 $file | awk '{print$3,$4}'`
+            lastsec=`date -d "$last" +%s`
+            currsec=`date +%s`
+            echo "$(dur2str $((currsec - lastsec))) on break"
+        else
+            echo "no timesheet entries yet"
+        fi
+    else
+        echo "the timer is on"
+    fi
 else
     echo "invalid command.  use the help command."
     exit
