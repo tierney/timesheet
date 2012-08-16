@@ -11,7 +11,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "USAGE:\n"\
 "start [backdate] -- start timing\n"\
 "stop [backdate] -- stop timing (prompts for message)\n"\
-"peek|status -- show time this period\n"\
+"peek|status|this -- show time this period\n"\
 "message message -- describe period\n"\
 "cancel -- cancel period\n"\
 "last -- show the last period\n"\
@@ -27,7 +27,7 @@ fi
 command=$1
 shift
 
-if [ $command == "status" ]; then
+if [[ $command == "status" || $command == "this" ]]; then
     command="peek"
 fi
 
@@ -102,7 +102,7 @@ if [ $command == "start" ]; then
                 ;;
             *)
                 echo "stopping old timer";
-                $0 stop;
+                $0 stop $@;
                 echo
                 ;;
         esac
