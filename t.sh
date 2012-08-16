@@ -2,7 +2,7 @@
 
 file="/home/paul/notes/.timesheet"
 curr="/home/paul/notes/.timesheet.state"
-weekstart="thursday"
+weekstart="thursday 11:30am"
 weekhours=40
 weekseconds=$((weekhours * 3600))
 
