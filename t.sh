@@ -1,7 +1,7 @@
 #!/bin/bash
 
-file="/home/paul/notes/.timesheet"
-curr="/home/paul/notes/.timesheet.state"
+file="$HOME/notes/.timesheet"
+curr="$HOME/notes/.timesheet.state"
 weekstart="thursday 11:30am"
 weekhours=40
 weekseconds=$((weekhours * 3600))
