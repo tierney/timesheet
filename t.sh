@@ -221,7 +221,7 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
     elif [ $command == "day" ]; then
         since=`date -d 00:00 +%s`
         until=`date +%s`
-    elif [ $$command == "left" ]; then
+    elif [ $command == "left" ]; then
         since=`date -d "last $weekstart" +%s`
         until=`date +%s`
     elif [ $command == "week" ]; then
@@ -233,8 +233,6 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
             since=`date -d "$weekstart_time $weekstart_day, $((ago-1)) weeks" +%s`
             until=`date -d "$weekstart_time $weekstart_day, $ago weeks" +%s`
         fi
-    else
-        echo "bob5"
     fi
     detail=true
     if [ $command == "left" ]; then
