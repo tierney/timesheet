@@ -203,7 +203,6 @@ elif [ $command == "last" ]; then
     fi
 elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
     || $command == "left" ]]; then
-    echo "poop$command"
     if [ $command == "yesterday" ]; then
         since=`date -d "yesterday 00:00" +%s`
         until=`date -d "yesterday 23:59:59" +%s`
@@ -230,6 +229,7 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
         detail=false
     fi
     tempfile=`tempfile -d /tmp/ -p time`
+    trap "rm -f $tempfile" EXIT
     cat $file | tail -n +2 | while read line; do
         sdate=`echo $line | awk '{print $1, $2}'`
         s=`date -d "$sdate" +%s`
@@ -272,7 +272,6 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
     for i in `cat $tempfile`; do
         duration=$((duration + i))
     done
-    rm $tempfile
     if [ $command == "left" ]; then
         left=$((weekseconds - duration))
         echo "$(dur2str $left) left"
