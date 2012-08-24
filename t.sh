@@ -6,6 +6,7 @@ curr="$HOME/notes/.timesheet.state"
 weekstart_day="thursday"
 weekstart_time="11:30am"
 weekhours=40
+maxdaysoff=2
 
 # some convenience variables. please don't touch
 weekstart="$weekstart_day $weekstart_time"
@@ -24,7 +25,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "today|yesterday|day [ago] -- show time today or previous days\n"\
 "week [ago] -- show time this or past weeks (ago is -1, -2, ...)\n"\
 "left|remaining -- show the total and per-day time left\n"\
-"perday -- show the average time per-day done and to do\n"\
+"breakdown -- show detailed view of this week's work and time left per day\n"\
 "break -- time since last period\n"\
 "help -- show command help\n"
     exit
@@ -256,7 +257,12 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
             
             echo $thisduration >> $tempfile
             if [ "$detail" == "true" ]; then
-                echo  `echo $line | cut -d" " -f1` $(dur2str $thisduration) `echo $line | cut -d" " -f5-`
+                if [ $command == "week" ]; then
+                    optdate=`echo $line | cut -d" " -f1`
+                else
+                    optdate=
+                fi
+                echo $optdate $(dur2str $thisduration) `echo $line | cut -d" " -f5-`
             fi
         fi
     done
@@ -274,7 +280,15 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
             thisduration=$((e - s))
             echo $thisduration >> $tempfile
             if [ "$detail" == "true" ]; then
-                echo "$(dur2str $thisduration) (current timer)"
+                if [ $command == "week" ]; then
+                    optdate=`date +%Y/%m/%d`
+                else
+                    optdate=
+                fi
+                if [[ -e $curr && `cat $curr | wc -l` -gt 2 ]]; then
+                    messageopt=" `tail -n1 $curr`"
+                fi
+                echo $optdate "$(dur2str $thisduration)$messageopt (current)"
             fi
         fi
     fi
@@ -286,12 +300,12 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
         left=$((weekseconds - duration))
         echo "$(dur2str $left) left"
         daysleft=$(((`date -d "$weekstart" +%w` + 7 - `date +%w`) % 7))
-        echo "$daysleft days left"
+        echo "$daysleft days left (including today)"
     else
         echo
         echo $(dur2str $duration)
     fi
-elif [ $command == "perday" ]; then
+elif [ $command == "breakdown" ]; then
     echo "not yet implemented"
     exit
 elif [ $command == "break" ]; then
