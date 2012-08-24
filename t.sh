@@ -173,17 +173,29 @@ elif [[ $command == "stop" || $command == "peek" ]]; then
 elif [ $command == "message" ]; then
     if [ -e $curr ]; then
         lines=`cat $curr | wc -l`
-        if [ "$lines" == "2" ]; then
-            message=$@
-            while [ "$message" == "" ]; do
-                read -p "please enter a mesage: " message
-            done
-            echo "$message" >> $curr
-            echo "message set"
-        else
+        if [ $lines -gt 2 ]; then
             echo "the message is already set"
             echo "message: `tail -n1 $curr`"
+            read -p "do you want to change the message? [y/N] " yn
+            case "$yn" in
+                y|Y)
+                    tempfile=`tempfile`
+                    trap "rm -f $tempfile" EXIT
+                    mv $curr $tempfile
+                    head -n2 $tempfile > $curr
+                    ;;
+                *)
+                    echo "okay.  leaving the existing message alone"
+                    exit
+                    ;;
+            esac
         fi
+        message=$@
+        while [ "$message" == "" ]; do
+            read -p "please enter a mesage: " message
+        done
+        echo "$message" >> $curr
+        echo "message set"
     else
         echo "the timer is not going"
     fi
