@@ -240,8 +240,14 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
         since=`date -d "yesterday 00:00" +%s`
         until=`date -d "yesterday 23:59:59" +%s`
     elif [ $command == "day" ]; then
-        since=`date -d 00:00 +%s`
-        until=`date +%s`
+        ago=$@
+        if [ "$ago" == "" ]; then
+            since=`date -d 00:00 +%s`
+            until=`date +%s`
+        else
+            echo "not yet implemented for previous days"
+            exit
+        fi
     elif [[ $command == "left" || $command == "done" ]]; then
         since=`date -d "last $weekstart" +%s`
         until=`date +%s`
