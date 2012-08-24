@@ -1,11 +1,17 @@
 #!/bin/bash
 
+# user settings
 file="$HOME/notes/.timesheet"
 curr="$HOME/notes/.timesheet.state"
-weekstart="thursday 11:30am"
+weekstart_day="thursday"
+weekstart_time="11:30am"
 weekhours=40
+
+# some convenience variables. please don't touch
+weekstart="$weekstart_day $weekstart_time"
 weekseconds=$((weekhours * 3600))
 
+# show help
 if [[ $# -eq 0 || $1 == "help" ]]; then
     echo -ne \
 "USAGE:\n"\
@@ -16,7 +22,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "cancel -- cancel period\n"\
 "last -- show the last period\n"\
 "today|yesterday|day [ago] -- show time today or previous days\n"\
-"week [ago] -- show time this or past weeks\n"\
+"week [ago] -- show time this or past weeks (ago is -1, -2, ...)\n"\
 "left|remaining -- show the total and per-day time left\n"\
 "perday -- show the average time per-day done and to do\n"\
 "break -- time since last period\n"\
@@ -27,6 +33,7 @@ fi
 command=$1
 shift
 
+# command aliases
 if [[ $command == "status" || $command == "this" ]]; then
     command="peek"
 fi
@@ -39,11 +46,14 @@ if [ $command == "remaining" ]; then
     command="left"
 fi
 
+# automatically create a new timesheet file
 if [ ! -e $file ]; then
     echo "no timesheet found.  creating $file"
     echo "timesheet" > $file
 fi
 
+# checks for a special signature ("timesheet" is the first line) to
+# avoid modifying files that are not really for this timesheet program
 fileid=`head -n1 $file`
 if [ "$fileid" != "timesheet" ]; then
     echo "$file is not a timesheet file!"
@@ -60,7 +70,7 @@ if [ -e $curr ]; then
     fi
 fi
 
-
+# print a time in seconds in hours, minutes, and seconds
 function dur2str {
     local duration=$1
     local hours=$(expr $duration / 3600)
@@ -92,6 +102,7 @@ function dur2str {
     fi
 }
 
+# perform timesheet management actions
 if [ $command == "start" ]; then
     if [[ -e $curr ]]; then
         read -p "the timer is already going.  start a new one? [Y/n] " yn
@@ -192,16 +203,27 @@ elif [ $command == "last" ]; then
     fi
 elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
     || $command == "left" ]]; then
+    echo "poop$command"
     if [ $command == "yesterday" ]; then
         since=`date -d "yesterday 00:00" +%s`
         until=`date -d "yesterday 23:59:59" +%s`
-    else
-        if [ $command == "day" ]; then
-            since=`date -d 00:00 +%s`
-        elif [[ $command == "week" || $command="left" ]]; then
-            since=`date -d "last $weekstart" +%s`
-        fi
+    elif [ $command == "day" ]; then
+        since=`date -d 00:00 +%s`
         until=`date +%s`
+    elif [ $$command == "left" ]; then
+        since=`date -d "last $weekstart" +%s`
+        until=`date +%s`
+    elif [ $command == "week" ]; then
+        ago=$@
+        if [ "$ago" == "" ]; then
+            since=`date -d "last $weekstart" +%s`
+            until=`date +%s`
+        else
+            since=`date -d "$weekstart_time $weekstart_day, $((ago-1)) weeks" +%s`
+            until=`date -d "$weekstart_time $weekstart_day, $ago weeks" +%s`
+        fi
+    else
+        echo "bob5"
     fi
     detail=true
     if [ $command == "left" ]; then
