@@ -18,23 +18,23 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "OPERATION:\n"\
 "start [backdate]\tstart timing\n"\
 "stop [backdate]\t\tstop timing (prompts for message)\n"\
-"message, msg message\tdescribe period\n"\
-"cancel\t\t\tcancel period\n"\
+"message, msg [message]\tdescribe this period\n"\
+"cancel\t\t\tcancel this period\n"\
 "\n"\
 "REPORTING:\n"\
-"peek, status, this\tshow time this period\n"\
-"last\t\t\tshow the last period\n"\
-"today\t\t\tshow today's time\n"\
-"yesterday\t\tshow yesterday's time\n"\
-"day [ago]\t\tshow time for previous days (ago is -1, -2, ...)\n"\
-"week [ago]\t\tshow time this or past weeks (ago is -1, -2, ...)\n"\
-"left, remaining\t\tshow the total and per-day time left\n"\
-"done\t\t\tshow hours done and days past\n"\
-"breakdown\t\tshow details of this week's time and time left per day\n"\
+"peek, status, this\tthis period's time\n"\
+"last\t\t\tlast period's time\n"\
 "break\t\t\ttime since last period\n"\
+"today\t\t\ttoday's time\n"\
+"yesterday\t\tyesterday's time\n"\
+"day [ago]\t\tprevious day's time (ago = -1, -2, ...)\n"\
+"week [ago]\t\tthis or a past week's time (ago = -1, -2, ...)\n"\
+"left, remaining\t\ttime and days left this week\n"\
+"done\t\t\thours done and days past this week\n"\
+"breakdown [ago]\t\tthis or a previous week's time in detail (ago = -1, ...)\n"\
 "\n"\
 "HELP:\n"\
-"help\t\t\tshow command help\n"
+"help\t\t\tshow this help screen\n"
     exit
 fi
 
