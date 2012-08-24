@@ -181,7 +181,7 @@ elif [[ $command == "stop" || $command == "peek" ]]; then
             rm $curr
             tail -n1 $file
         else
-            echo "started $last"
+            echo "started at `echo $last | cut -d" " -f2`"
             if [ $lines -gt 2 ]; then
                 echo "message: `tail -n1 $curr`"
             fi
