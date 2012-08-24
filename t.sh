@@ -15,20 +15,26 @@ weekseconds=$((weekhours * 3600))
 # show help
 if [[ $# -eq 0 || $1 == "help" ]]; then
     echo -ne \
-"USAGE:\n"\
-"start [backdate] -- start timing\n"\
-"stop [backdate] -- stop timing (prompts for message)\n"\
-"peek|status|this -- show time this period\n"\
-"message message -- describe period\n"\
-"cancel -- cancel period\n"\
-"last -- show the last period\n"\
-"today|yesterday|day [ago] -- show time today or previous days\n"\
-"done -- show hours done and days past\n"\
-"week [ago] -- show time this or past weeks (ago is -1, -2, ...)\n"\
-"left|remaining -- show the total and per-day time left\n"\
-"breakdown -- show detailed view of this week's work and time left per day\n"\
-"break -- time since last period\n"\
-"help -- show command help\n"
+"OPERATION:\n"\
+"start [backdate]\tstart timing\n"\
+"stop [backdate]\t\tstop timing (prompts for message)\n"\
+"message, msg message\tdescribe period\n"\
+"cancel\t\t\tcancel period\n"\
+"\n"\
+"REPORTING:\n"\
+"peek, status, this\tshow time this period\n"\
+"last\t\t\tshow the last period\n"\
+"today\t\t\tshow today's time\n"\
+"yesterday\t\tshow yesterday's time\n"\
+"day [ago]\t\tshow time for previous days (ago is -1, -2, ...)\n"\
+"week [ago]\t\tshow time this or past weeks (ago is -1, -2, ...)\n"\
+"left, remaining\t\tshow the total and per-day time left\n"\
+"done\t\t\tshow hours done and days past\n"\
+"breakdown\t\tshow details of this week's time and time left per day\n"\
+"break\t\t\ttime since last period\n"\
+"\n"\
+"HELP:\n"\
+"help\t\t\tshow command help\n"
     exit
 fi
 
@@ -39,13 +45,14 @@ shift
 if [[ $command == "status" || $command == "this" ]]; then
     command="peek"
 fi
-
 if [ $command == "today" ]; then
     command="day"
 fi
-
 if [ $command == "remaining" ]; then
     command="left"
+fi
+if [ $command == "msg" ]; then
+    command="message"
 fi
 
 # automatically create a new timesheet file
