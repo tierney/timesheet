@@ -23,6 +23,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "cancel -- cancel period\n"\
 "last -- show the last period\n"\
 "today|yesterday|day [ago] -- show time today or previous days\n"\
+"done -- show hours done and days past\n"\
 "week [ago] -- show time this or past weeks (ago is -1, -2, ...)\n"\
 "left|remaining -- show the total and per-day time left\n"\
 "breakdown -- show detailed view of this week's work and time left per day\n"\
@@ -100,6 +101,18 @@ function dur2str {
             timelabel="seconds"
         fi
         printf "%d %s" $seconds $timelabel
+    fi
+}
+
+#pluralize a word
+function pluralize {
+    local singular=$1
+    local plural=$2
+    local num=$3
+    if [ $num -eq 1 ]; then
+        echo $singular
+    else
+        echo $plural
     fi
 }
 
@@ -215,14 +228,14 @@ elif [ $command == "last" ]; then
         echo "no timesheet entries yet"
     fi
 elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
-    || $command == "left" ]]; then
+    || $command == "left" || $command == "done" ]]; then
     if [ $command == "yesterday" ]; then
         since=`date -d "yesterday 00:00" +%s`
         until=`date -d "yesterday 23:59:59" +%s`
     elif [ $command == "day" ]; then
         since=`date -d 00:00 +%s`
         until=`date +%s`
-    elif [ $command == "left" ]; then
+    elif [[ $command == "left" || $command == "done" ]]; then
         since=`date -d "last $weekstart" +%s`
         until=`date +%s`
     elif [ $command == "week" ]; then
@@ -236,7 +249,7 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
         fi
     fi
     detail=true
-    if [ $command == "left" ]; then
+    if [[ $command == "left" || $command == "done" ]]; then
         detail=false
     fi
     tempfile=`tempfile -d /tmp/ -p time`
@@ -300,10 +313,18 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
         left=$((weekseconds - duration))
         echo "$(dur2str $left) left"
         daysleft=$(((`date -d "$weekstart" +%w` + 7 - `date +%w`) % 7))
-        echo "$daysleft days left (including today)"
+        echo "$daysleft $(pluralize day days $daysleft) left including today"
     else
-        echo
-        echo $(dur2str $duration)
+        if [ $detail == "true" ]; then
+            echo
+        fi
+        if [ $command == "done" ]; then
+            dayspast=$(((`date +%w` + 7 - `date -d "$weekstart" +%w`) % 7))
+            echo "$(dur2str $duration) done"
+            echo "$dayspast $(pluralize day days $dayspast) past excluding today"
+        else
+            echo $(dur2str $duration)
+        fi
     fi
 elif [ $command == "breakdown" ]; then
     echo "not yet implemented"
