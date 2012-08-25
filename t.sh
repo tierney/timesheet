@@ -180,14 +180,15 @@ elif [[ $command == "stop" || $command == "peek" ]]; then
             echo "$last $now $message" >> $file
             rm $curr
             tail -n1 $file
+            echo
+            echo "$(dur2str $duration)"
         else
-            echo "started at `echo $last | cut -d" " -f2`"
             if [ $lines -gt 2 ]; then
-                echo "message: `tail -n1 $curr`"
+                message=`tail -n1 $curr`
             fi
+            echo "$(dur2str $duration)" $message
+            echo "started at `echo $last | cut -d" " -f2`"
         fi
-        echo
-        echo "$(dur2str $duration)"
     else
         echo "the timer is not going"
     fi
@@ -333,8 +334,8 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
         fi
         if [ $command == "done" ]; then
             dayspast=$(((`date +%w` + 7 - `date -d "$weekstart" +%w`) % 7))
-            echo "$(dur2str $duration) done"
-            echo "$dayspast $(pluralize day days $dayspast) past excluding today"
+            echo "$(dur2str $duration)"
+            echo "$dayspast $(pluralize day days $dayspast)"
         else
             echo $(dur2str $duration)
         fi
