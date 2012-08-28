@@ -26,7 +26,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "last\t\t\tlast period's time\n"\
 "break\t\t\ttime since last period\n"\
 "today\t\t\ttoday's time\n"\
-"yesterday\t\tyesterday's time\n"\
+"yesterday, ytd\t\tyesterday's time\n"\
 "day [ago]\t\tprevious day's time (ago = -1, -2, ...)\n"\
 "week [ago]\t\tthis or a past week's time (ago = -1, -2, ...)\n"\
 "left, remaining\t\ttime and days left this week\n"\
@@ -53,6 +53,9 @@ if [ $command == "remaining" ]; then
 fi
 if [ $command == "msg" ]; then
     command="message"
+fi
+if [ $command == "ytd" ]; then
+    command="yesterday"
 fi
 
 # automatically create a new timesheet file
