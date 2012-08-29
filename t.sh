@@ -16,11 +16,11 @@ weekseconds=$((weekhours * 3600))
 if [[ $# -eq 0 || $1 == "help" ]]; then
     echo -ne \
 "OPERATION:\n"\
-"start [backdate]\tstart timing\n"\
+"start [message]\t\tstart timing\n"\
 "stop [backdate]\t\tstop timing (prompts for message)\n"\
 "message, msg [message]\tdescribe this period\n"\
 "cancel\t\t\tcancel this period\n"\
-"startback [backdate]\tstart timing from a specific time\n"\
+"backstart [backdate]\tstart timing from a specific time\n"\
 "\n"\
 "REPORTING:\n"\
 "peek, status, this\tthis period's time\n"\
@@ -129,7 +129,7 @@ function pluralize {
 }
 
 # perform timesheet management actions
-if [[ $command == "start" || $command == "startback" ]]; then
+if [[ $command == "start" || $command == "backstart" ]]; then
     if [[ -e $curr ]]; then
         read -p "the timer is already going.  start a new one? [Y/n] " yn
         case "$yn" in
@@ -139,23 +139,34 @@ if [[ $command == "start" || $command == "startback" ]]; then
                 ;;
             *)
                 echo "stopping old timer";
-                $0 stop $@;
+                if [ $command == "start" ]; then
+                    $0 stop
+                elif [ $command == "backstart" ]; then
+                    $0 stop $@
+                fi
                 echo
                 ;;
         esac
     fi
     if [ $# -gt 0 ]; then
-        backdate="-d \"$@\""
-        echo "backdating"
-        echo "date $backdate" | bash
-        if [ $? -ne 0 ]; then
-            echo "invalid date. try again."
-            exit
+        if [ $command == "backstart" ]; then
+            backdate="-d \"$@\""
+            echo "backdating"
+            echo "date $backdate" | bash
+            if [ $? -ne 0 ]; then
+                echo "invalid date. try again."
+                exit
+            fi
         fi
     fi
     echo "timesheet" > $curr
     echo "date $backdate +%Y/%m/%d\ %H:%M:%S >> $curr" | bash
     echo "started timing"
+    if [ $# -gt 0 ]; then
+        if [ $command == "start" ]; then
+            $0 message $@
+        fi
+    fi
 elif [[ $command == "stop" || $command == "peek" ]]; then
     if [[ -e $curr ]]; then
         last=`head -n2 $curr | tail -n1`
