@@ -20,6 +20,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "stop [backdate]\t\tstop timing (prompts for message)\n"\
 "message, msg [message]\tdescribe this period\n"\
 "cancel\t\t\tcancel this period\n"\
+"startback [backdate]\tstart timing from a specific time\n"\
 "\n"\
 "REPORTING:\n"\
 "peek, status, this\tthis period's time\n"\
@@ -128,7 +129,7 @@ function pluralize {
 }
 
 # perform timesheet management actions
-if [ $command == "start" ]; then
+if [[ $command == "start" || $command == "startback" ]]; then
     if [[ -e $curr ]]; then
         read -p "the timer is already going.  start a new one? [Y/n] " yn
         case "$yn" in
