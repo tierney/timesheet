@@ -31,6 +31,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "week [ago]\t\tthis or a past week's time (ago = -1, -2, ...)\n"\
 "left, remaining\t\ttime and days left this week\n"\
 "done\t\t\thours done and days past this week\n"\
+"since [date]\t\ttime since a date string (see -d in \"man date\")\n"\
 "breakdown [ago]\t\tthis or a previous week's time in detail (ago = -1, ...)\n"\
 "\n"\
 "HELP:\n"\
@@ -239,7 +240,7 @@ elif [ $command == "last" ]; then
         echo "no timesheet entries yet"
     fi
 elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
-    || $command == "left" || $command == "done" ]]; then
+    || $command == "left" || $command == "done" || $command == "since" ]]; then
     if [ $command == "yesterday" ]; then
         since=`date -d "yesterday 00:00" +%s`
         until=`date -d "yesterday 23:59:59" +%s`
@@ -264,6 +265,10 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
             since=`date -d "$weekstart_time $weekstart_day, $((ago-1)) weeks" +%s`
             until=`date -d "$weekstart_time $weekstart_day, $ago weeks" +%s`
         fi
+    elif [ $command == "since" ]; then
+        date=$@
+        since=`date -d "$date" +%s`
+        until=`date +%s`
     fi
     detail=true
     if [[ $command == "left" || $command == "done" ]]; then
