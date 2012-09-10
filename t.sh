@@ -188,7 +188,7 @@ elif [[ $command == "stop" || $command == "peek" ]]; then
             if [ "$lines" == "2" ]; then
                 message=
                 while [ "$message" == "" ]; do
-                    read -p "please enter a mesage: " message
+                    read -p "please enter a message: " message
                 done
             else
                 message=`tail -n1 $curr`
