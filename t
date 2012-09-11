@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # user settings
-file="$HOME/notes/.timesheet"
-curr="$HOME/notes/.timesheet.state"
-weekstart_day="thursday"
-weekstart_time="11:30am"
-weekhours=40
-maxdaysoff=2
+file="$HOME/.timesheet"        # timesheet
+curr="$HOME/.timesheet.state"  # current timer
+weekstart_day="thursday"       # week starting day
+weekstart_time="11:30am"       # week starting time
+weekhours=40                   # working hours in a week
+maxdaysoff=2                   # maximum days off
 
 # some convenience variables. please don't touch
 weekstart="$weekstart_day $weekstart_time"
