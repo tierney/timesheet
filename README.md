@@ -1,3 +1,12 @@
+Setup
+=====
+
+Open t in an editor and tweek the variables to set the location of the
+timesheet and define your workweek.
+
+Copy or symlink t to be in your PATH for easy execution.
+
+
 Tutorial
 ========
 
