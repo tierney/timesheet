@@ -16,11 +16,10 @@ weekseconds=$((weekhours * 3600))
 if [[ $# -eq 0 || $1 == "help" ]]; then
     echo -ne \
 "OPERATION:\n"\
-"start [message]\t\tstart timing\n"\
-"stop [backdate]\t\tstop timing (prompts for message)\n"\
+"start [-m msg] [backdate]\t\tstart timing\n"\
+"stop [-m msg] [backdate]\t\tstop timing (prompts for message)\n"\
 "message, msg [message]\tdescribe this period\n"\
 "cancel\t\t\tcancel this period\n"\
-"backstart [backdate]\tstart timing from a specific time\n"\
 "\n"\
 "REPORTING:\n"\
 "peek, status, this\tthis period's time\n"\
@@ -58,6 +57,19 @@ if [ $command == "msg" ]; then
 fi
 if [ $command == "ytd" ]; then
     command="yesterday"
+fi
+
+# command-line message
+message=
+if [ "$1" == "-m" ]; then
+    shift
+    message=$1
+    shift
+fi
+
+if [[ "$message" != "" && $command != "start"
+            && $command != "stop" ]]; then
+    echo "ignoring superfluous -m option"
 fi
 
 # automatically create a new timesheet file
@@ -129,7 +141,7 @@ function pluralize {
 }
 
 # perform timesheet management actions
-if [[ $command == "start" || $command == "backstart" ]]; then
+if [[ $command == "start" ]]; then
     if [[ -e $curr ]]; then
         read -p "the timer is already going.  start a new one? [Y/n] " yn
         case "$yn" in
@@ -139,20 +151,15 @@ if [[ $command == "start" || $command == "backstart" ]]; then
                 ;;
             *)
                 echo "stopping old timer";
-                if [ $command == "start" ]; then
-                    $0 stop
-                elif [ $command == "backstart" ]; then
-                    $0 stop $@
-                fi
+                $0 stop $@
                 echo
                 ;;
         esac
     fi
     if [ $# -gt 0 ]; then
-        if [ $command == "backstart" ]; then
+        if [ $command == "start" ]; then
             backdate="-d \"$@\""
-            echo "backdating"
-            echo "date $backdate" | bash
+            echo "date $backdate" | bash >/dev/null 2>&1
             if [ $? -ne 0 ]; then
                 echo "invalid date. try again."
                 exit
@@ -162,10 +169,8 @@ if [[ $command == "start" || $command == "backstart" ]]; then
     echo "timesheet" > $curr
     echo "date $backdate +%Y/%m/%d\ %H:%M:%S >> $curr" | bash
     echo "started timing"
-    if [ $# -gt 0 ]; then
-        if [ $command == "start" ]; then
-            $0 message $@
-        fi
+    if [ "$message" != "" ]; then
+        $0 message $message
     fi
 elif [[ $command == "stop" || $command == "peek" ]]; then
     if [[ -e $curr ]]; then
@@ -361,8 +366,31 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
         fi
     fi
 elif [ $command == "breakdown" ]; then
-    echo "not yet implemented"
-    exit
+    # painfully slow! need to collect each day in one pass of the
+    # timesheet database.
+    for i in {0..6}; do
+        since=`date -d "$i day last $weekstart" +%s`
+        until=`date -d "$((i+1)) day last $weekstart" +%s`
+        tempfile=`tempfile -d /tmp/ -p time`
+        trap "rm -f $tempfile" EXIT
+        cat $file | tail -n +2 | while read line; do
+            sdate=`echo $line | awk '{print $1, $2}'`
+            s=`date -d "$sdate" +%s`
+            edate=`echo $line | awk '{print $3, $4}'`
+            e=`date -d "$edate" +%s`
+            if [[ $s -gt $since && $s -lt $until ]]; then
+                thisduration=$((e - s))
+                
+                echo $thisduration >> $tempfile
+            fi
+        done
+        duration=0
+        for i in `cat $tempfile`; do
+            duration=$((duration + i))
+        done
+        echo `date -d "$i day last $weekstart" +%a\ %b\ %d` \
+            $(dur2str $duration)
+    done
 elif [ $command == "break" ]; then
     if [ ! -e $curr ]; then
         lines=`cat $file | wc -l`
