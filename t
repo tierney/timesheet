@@ -368,9 +368,9 @@ elif [[ $command == "day" || $command == "week" || $command == "yesterday" \
 elif [ $command == "breakdown" ]; then
     # painfully slow! need to collect each day in one pass of the
     # timesheet database.
-    for i in {0..6}; do
-        since=`date -d "$i day last $weekstart" +%s`
-        until=`date -d "$((i+1)) day last $weekstart" +%s`
+    for day in {0..6}; do
+        since=`date -d "$day day last $weekstart" +%s`
+        until=`date -d "$((day+1)) day last $weekstart" +%s`
         tempfile=`tempfile -d /tmp/ -p time`
         trap "rm -f $tempfile" EXIT
         cat $file | tail -n +2 | while read line; do
@@ -388,7 +388,7 @@ elif [ $command == "breakdown" ]; then
         for i in `cat $tempfile`; do
             duration=$((duration + i))
         done
-        echo `date -d "$i day last $weekstart" +%a\ %b\ %d` \
+        echo `date -d "$day day last $weekstart" +%a\ %b\ %d` \
             $(dur2str $duration)
     done
 elif [ $command == "break" ]; then
