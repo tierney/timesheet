@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import os
 import sys
 import util
 
@@ -13,8 +14,8 @@ def main(argv):
   command = argv[1]
   assert command in ['start', 'stop']
 
-  timesheet_log = TimesheetLog('/home/tierney/.timesheet')
-  timesheet_state = TimesheetState('/home/tierney/.timesheet.state')
+  timesheet_log = TimesheetLog(os.path.expanduser('~/.timesheet'))
+  timesheet_state = TimesheetState(os.path.expanduser('~/.timesheet.state'))
 
   if command == 'start':
     ret = timesheet_state.Get()
