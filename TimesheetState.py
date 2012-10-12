@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 
 import os
+from datetime import datetime
+import util
+
 class TimesheetState(object):
   def __init__(self, filename):
     self.filename = filename
 
-  def Set(self, start_time):
+  def Set(self, start_time, message = ''):
+    assert isinstance(start_time, datetime)
     with open(self.filename, 'w') as fh:
       fh.write('timesheet.state\n')
-      fh.write(start_time)
+      fh.write(util.get_string_from_date(start_time))
+      fh.write('\n')
+      if message != '':
+        fh.write(message);
+        fh.write('\n')
 
   # Returns the (datetime, string message) if the time is set or None.
   def Get(self):
@@ -20,10 +28,10 @@ class TimesheetState(object):
       protocol_to_check = fh.readline().strip()
       assert protocol_to_check == 'timesheet.state'
 
-      logged_time = fh.readline()
-      message = fh.readline()
+      logged_time = fh.readline().strip()
+      message = fh.readline().strip()
 
-      return logged_time, message
+      return util.get_date_from_string(logged_time), message
 
   def Clear(self):
     if os.path.exists(self.filename):
