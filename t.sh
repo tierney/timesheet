@@ -89,7 +89,7 @@ fi
 
 if [ -e $curr ]; then
     currid=`head -n1 $curr`
-    if [ "$currid" != "timesheet.state" ]; then
+    if [ "$currid" != "timesheet" ]; then
         echo "$curr is not a timesheet state file!"
         echo "move the file or use a different one for the timesheet state file"
         exit
@@ -166,7 +166,7 @@ if [[ $command == "start" ]]; then
             fi
         fi
     fi
-    echo "timesheet.state" > $curr
+    echo "timesheet" > $curr
     echo "date $backdate +%Y/%m/%d\ %H:%M:%S >> $curr" | bash
     echo "started timing"
     if [ "$message" != "" ]; then

@@ -10,11 +10,15 @@ from TimesheetState import TimesheetState
 from datetime import datetime
 from datetime import timedelta
 
-def myfun():
-  return "JFKLDS"
+TIMESHEET = '~/.py.timesheet'
+STATE = '~/.py.timesheet.state'
 
 def print_usage():
   print "USAGE"
+  print prog + " start [-m msg] [backdate]"
+  print prog + " stop [-m msg] [backdate]"
+  print prog + " message msg"
+  print prog + " cancel"
 
 def main(argv):
   if len(argv) == 1:
@@ -37,8 +41,8 @@ def main(argv):
 
   argument = ' '.join(args)
 
-  timesheet_log = TimesheetLog(os.path.expanduser('~/scratch/.timesheet'))
-  timesheet_state = TimesheetState(os.path.expanduser('~/scratch/.timesheet.state'))
+  timesheet_log = TimesheetLog(os.path.expanduser(TIMESHEET))
+  timesheet_state = TimesheetState(os.path.expanduser(STATE))
 
   if command == 'start':
     ret = timesheet_state.Get()

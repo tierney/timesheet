@@ -10,6 +10,7 @@ class TimesheetState(object):
 
   def Set(self, start_time, message = ''):
     assert isinstance(start_time, datetime)
+    # TODO(paul): Make sure timesheet state file doesn't exist yet.
     with open(self.filename, 'w') as fh:
       fh.write('timesheet.state\n')
       fh.write(util.get_string_from_date(start_time))
@@ -35,4 +36,5 @@ class TimesheetState(object):
 
   def Clear(self):
     if os.path.exists(self.filename):
+      # TODO(paul): Make sure the file has timesheet.state at the top.
       os.remove(self.filename)
