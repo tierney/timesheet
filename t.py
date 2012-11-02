@@ -13,7 +13,8 @@ from datetime import timedelta
 TIMESHEET = '~/.py.timesheet'
 STATE = '~/.py.timesheet.state'
 
-def print_usage():
+def print_usage(argv):
+  prog = argv[0]
   print "USAGE"
   print prog + " start [-m msg] [backdate]"
   print prog + " stop [-m msg] [backdate]"
@@ -22,7 +23,7 @@ def print_usage():
 
 def main(argv):
   if len(argv) == 1:
-    print_usage()
+    print_usage(argv)
     return
 
   # Get the command and its arguments
