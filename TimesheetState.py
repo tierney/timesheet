@@ -8,12 +8,14 @@ class TimesheetState(object):
   def __init__(self, filename):
     self.filename = filename
 
+  # Set start of timer and its message.
   def Set(self, start_time, message = ''):
     assert isinstance(start_time, datetime)
-    # TODO(paul): Make sure timesheet state file doesn't exist yet.
+    assert isinstance(message, str)
+    # TODO check that message is a string
     with open(self.filename, 'w') as fh:
       fh.write('timesheet.state\n')
-      fh.write(util.get_string_from_date(start_time))
+      fh.write(util.date2string(start_time))
       fh.write('\n')
       if message != '':
         fh.write(message);
@@ -25,16 +27,17 @@ class TimesheetState(object):
       return None
 
     with open(self.filename, 'r') as fh:
-      # First line should say 'timesheet'.
       protocol_to_check = fh.readline().strip()
       assert protocol_to_check == 'timesheet.state'
 
       logged_time = fh.readline().strip()
       message = fh.readline().strip()
 
-      return util.get_date_from_string(logged_time), message
+      return util.string2date(logged_time), message
 
   def Clear(self):
-    if os.path.exists(self.filename):
-      # TODO(paul): Make sure the file has timesheet.state at the top.
-      os.remove(self.filename)
+    assert os.path.exists(self.filename)
+    with open(self.filename, 'r') as fh:
+      protocol_to_check = fh.readline().strip()
+      assert protocol_to_check == 'timesheet.state'
+    os.remove(self.filename)
