@@ -10,6 +10,7 @@ from TimesheetState import TimesheetState
 from datetime import datetime
 from datetime import timedelta
 
+# CONFIG = '~/.timesheetrc'
 TIMESHEET = '~/.py.timesheet'
 STATE = '~/.py.timesheet.state'
 
