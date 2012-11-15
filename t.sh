@@ -20,6 +20,7 @@ if [[ $# -eq 0 || $1 == "help" ]]; then
 "stop [-m msg] [backdate]\t\tstop timing (prompts for message)\n"\
 "message, msg [message]\tdescribe this period\n"\
 "cancel\t\t\tcancel this period\n"\
+"import\t\t\timport csv from mbox\n"\
 "\n"\
 "REPORTING:\n"\
 "peek, status, this\tthis period's time\n"\
@@ -191,7 +192,6 @@ elif [[ $command == "stop" || $command == "peek" ]]; then
         lines=`cat $curr | wc -l`
         if [ $command == "stop" ]; then
             if [ "$lines" == "2" ]; then
-                message=
                 while [ "$message" == "" ]; do
                     read -p "please enter a message: " message
                 done
@@ -405,6 +405,13 @@ elif [ $command == "break" ]; then
     else
         echo "the timer is on"
     fi
+elif [ $command == "import" ]; then
+    script=`readlink $0`
+    dir=`dirname $script`
+    mbox=$dir/mbox.py
+
+    fetchmail
+    $mbox
 else
     echo "invalid command.  use the help command."
     exit
