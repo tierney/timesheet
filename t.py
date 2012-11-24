@@ -5,14 +5,16 @@ import sys
 import util
 
 from TimesheetLog import TimesheetLog
+from TimesheetCSV import TimesheetCSV
 from TimesheetState import TimesheetState
 
 from datetime import datetime
 from datetime import timedelta
 
-# CONFIG = '~/.timesheetrc'
-TIMESHEET = '~/.py.timesheet'
-STATE = '~/.py.timesheet.state'
+CONFIG = '~/.timesheetrc'
+TIMESHEETLOG = '~/.py.timesheet'
+TIMESHEETSTATE = '~/.py.timesheet.state'
+USECSV = True
 
 def print_usage(argv):
   prog = os.path.basename(argv[0])
@@ -43,8 +45,11 @@ def main(argv):
 
   argument = ' '.join(args)
 
-  timesheet_log = TimesheetLog(os.path.expanduser(TIMESHEET))
-  timesheet_state = TimesheetState(os.path.expanduser(STATE))
+  if USECSV:
+    timesheet_log = TimesheetCSV(os.path.expanduser(TIMESHEETLOG))
+  else:
+    timesheet_log = TimesheetLog(os.path.expanduser(TIMESHEETLOG))
+  timesheet_state = TimesheetState(os.path.expanduser(TIMESHEETSTATE))
 
   if command == 'start':
     ret = timesheet_state.Get()
@@ -71,7 +76,10 @@ def main(argv):
       logged_time, logged_message = ret
       while logged_message == '':
         logged_message = raw_input("please enter a message: ")
-      timesheet_log.AddEntry(logged_time, stoptime, logged_message)
+      added, msg = timesheet_log.AddEntry(logged_time, stoptime, logged_message)
+      if not added:
+        print msg
+        exit(1)
       timesheet_state.Clear()
       print util.date2string(logged_time), util.date2string(stoptime),
       logged_message
@@ -105,7 +113,10 @@ def main(argv):
       while logged_message == '':
         logged_message = raw_input("please enter a message: ")
       entry_message = logged_message
-    timesheet_log.AddEntry(logged_time, stoptime, entry_message)
+    added, msg = timesheet_log.AddEntry(logged_time, stoptime, entry_message)
+    if not added:
+      print msg
+      exit(1)
     timesheet_state.Clear()
     print util.date2string(logged_time), util.date2string(stoptime),
     entry_message
