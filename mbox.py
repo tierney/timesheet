@@ -35,7 +35,7 @@ def main(argv):
     imported = 0
     try:
         for key, msg in mbox.iteritems():
-            if msg['subject'].startswith('Eternity weekly report for'):
+            if msg['subject'].startswith('Eternity'):
                 for part in msg.walk():  # assume its multipart by its subject
                     if part.get_content_type() == 'text/csv' and '_logs_' in part.get_filename():
                         sio = StringIO.StringIO(part.get_payload())
