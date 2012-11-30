@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # user settings
-file="$HOME/.timesheet"        # timesheet
-curr="$HOME/.timesheet.state"  # current timer
+file="$HOME/.timesheet.back"        # timesheet
+curr="$HOME/.timesheet.state.back"  # current timer
 weekstart_day="thursday"       # week starting day
 weekstart_time="11:30pm"       # week starting time
 weekhours=40                   # working hours in a week
