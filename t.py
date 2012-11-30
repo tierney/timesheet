@@ -4,40 +4,93 @@ import os
 import sys
 import util
 
-from TimesheetLog import TimesheetLog
+import ConfigParser
 from TimesheetCSV import TimesheetCSV
 from TimesheetState import TimesheetState
+from Importer import Importer
 
 from datetime import datetime
 from datetime import timedelta
 
-CONFIG = '~/.timesheetrc'
-TIMESHEETLOG = '~/.py.timesheet'
-TIMESHEETSTATE = '~/.py.timesheet.state'
-USECSV = True
+def print_usage(prog):
+  print 'USAGE'
+  print prog + ' start [-m msg] [backdate]\tstart timing'
+  print prog + ' stop [-m msg] [backdate]\tstop timing'
+  print prog + ' message msg\t\t\tdescribe this period'
+  print prog + ' cancel\t\t\tcancel this period'
+  print ''
+  print prog + ' status\t\t\tthis period\'s time'
+  print prog + ' week\t\t\tbreakdown of week by day'
+  print ''
+  print prog + ' import\t\t\timport eternity csv from mbox'
 
-def print_usage(argv):
-  prog = os.path.basename(argv[0])
-  print "USAGE"
-  print prog + " start [-m msg] [backdate]"
-  print prog + " stop [-m msg] [backdate]"
-  print prog + " message msg"
-  print prog + " cancel"
+def create_config(config_path):
+  print 'creating config file: ' + config_path
+  config = ConfigParser.ConfigParser()
+  config.add_section('Parameters')
+  config.set('Parameters', 'week_start', 'Monday 9:00am')
+
+  config.add_section('Storage')
+  config.set('Storage', 'timesheet', '~/.timesheet.csv')
+  config.set('Storage', 'state', '~/.timesheet.state')
+
+  config.add_section('Importing')
+  config.set('Importing', 'mbox', '~/.mail/incoming')
+
+  with open(config_path, 'wb+') as configfile:
+    config.write(configfile)
 
 def main(argv):
-  if len(argv) == 1:
-    print_usage(argv)
+  prog = os.path.basename(argv[0])  # program name as called
+  argc = 1  # i like C
+  
+  # get or create config file
+  config_path = os.path.expanduser('~/.timesheetrc')
+  if len(argv[argc:]) >= 2 and argv[argc] == '-c':
+    argc = argc + 1
+    config_path = argv[argc]
+    argc = argc + 1
+
+  week_start = None
+  timesheet_logfile = None
+  timesheet_statefile = None
+  mbox_path = None
+  if not os.path.exists(config_path):
+    create_config(config_path)
+  try_config = 0
+  success = False
+  while try_config < 3 and not success:
+    try_config += 1
+    config = ConfigParser.ConfigParser()
+    config.read(config_path)
+
+    try:
+      week_start = config.get('Parameters', 'week_start')
+      timesheet_logfile = config.get('Storage', 'timesheet')
+      timesheet_statefile = config.get('Storage', 'state')
+      mbox_path = config.get('Importing', 'mbox')
+      success = True
+    except ConfigParser.NoOptionError, err:
+      print 'error: missing option in ' + config_path
+      create_config(config_path)
+    except ConfigParser.NoSectionError, err:
+      print 'error: missing section in ' + config_path
+      create_config(config_path)
+
+  # get the timesheet command and its arguments
+  if argc >= len(argv):
+    print_usage(prog)
     return
 
-  # Get the command and its arguments
-  command = argv[1]
-  args = argv[2:]
+  command = argv[argc]
+  argc += 1
+  args = argv[argc:]
 
-  # Get the "-m message" parameter for the start and stop commands.
+  # get the "-m message" parameter for the start and stop commands.
   command_message = ''
   if len(args) > 0 and command in ['start', 'stop'] and args[0] == '-m':
     if len(args) == 1:
-      print "-m must take a message as a parameter"
+      print '-m must take a message as a parameter'
       return
     else:
       command_message = args[1]
@@ -45,12 +98,11 @@ def main(argv):
 
   argument = ' '.join(args)
 
-  if USECSV:
-    timesheet_log = TimesheetCSV(os.path.expanduser(TIMESHEETLOG))
-  else:
-    timesheet_log = TimesheetLog(os.path.expanduser(TIMESHEETLOG))
-  timesheet_state = TimesheetState(os.path.expanduser(TIMESHEETSTATE))
+  # get the timesheet log and state files
+  timesheet_log = TimesheetCSV(os.path.expanduser(timesheet_logfile))
+  timesheet_state = TimesheetState(os.path.expanduser(timesheet_statefile))
 
+  # process commands
   if command == 'start':
     ret = timesheet_state.Get()
 
@@ -58,24 +110,22 @@ def main(argv):
       # backdate the timer
       starttime = util.string2date(argument)
       if starttime == None:
-        print "invalid date. try again."
+        print 'invalid date. try again.'
         return
     else:
       starttime = datetime.today()
 
     if ret:
       # stop the old timer first
-      yn = ''
-      while yn == '':
-        yn = raw_input("the timer is already going.  start a new one? [Y/n] ")
-        if yn.lower() != 'y':
-          print "aborted.  did not cancel the timer"
-          return
-      print "stopping old timer"
+      yn = raw_input('the timer is already going.  start a new one? [Y/n] ')
+      if yn.lower() == 'n':
+        print 'aborted.  did not cancel the timer'
+        return
+      print 'stopping old timer'
       stoptime = starttime;
       logged_time, logged_message = ret
       while logged_message == '':
-        logged_message = raw_input("please enter a message: ")
+        logged_message = raw_input('please enter a message: ')
       added, msg = timesheet_log.AddEntry(logged_time, stoptime, logged_message)
       if not added:
         print msg
@@ -86,21 +136,21 @@ def main(argv):
       print '\n', util.delta2string(stoptime - logged_time), '\n'
 
     timesheet_state.Set(starttime, command_message)
-    print "started timing"
+    print 'started timing'
     if command_message != '':
-      print "message set"
+      print 'message set'
 
   elif command == 'stop':
     ret = timesheet_state.Get()
     if not ret:
-      print "cannot stop what has not been started."
+      print 'cannot stop what has not been started.'
       return
 
     if argument != '':
       # backdate the timer
       stoptime = util.string2date(argument)
       if stoptime == None:
-        print "invalid date. try again."
+        print 'invalid date. try again.'
         return
     else:
       stoptime = datetime.today();
@@ -111,7 +161,7 @@ def main(argv):
       entry_message = command_message
     else:
       while logged_message == '':
-        logged_message = raw_input("please enter a message: ")
+        logged_message = raw_input('please enter a message: ')
       entry_message = logged_message
     added, msg = timesheet_log.AddEntry(logged_time, stoptime, entry_message)
     if not added:
@@ -125,59 +175,101 @@ def main(argv):
   elif command == 'message':
     ret = timesheet_state.Get()
     if not ret:
-      print "the timer is not going"
+      print 'the timer is not going'
       return
 
     logged_time, logged_message = ret
     if logged_message != '':
-      print "the message is already set"
-      yn = ''
-      while yn == '':
-        yn = raw_input("do you want to change the message? [y/N] ")
-      if yn.lower() == 'n':
-        print "okay.  leaving the existing message alone"
+      print 'the message is already set'
+      yn = raw_input('do you want to change the message? [y/N] ')
+      if yn.lower() != 'y':
+        print 'okay.  leaving the existing message alone'
         return
       logged_message = ''
     if argument != '':
       entry_message = argument
     else:
       while logged_message == '':
-        logged_message = raw_input("please enter a message: ")
+        logged_message = raw_input('please enter a message: ')
       entry_message = logged_message
     timesheet_state.Set(logged_time, entry_message)
-    print "message set"
+    print 'message set'
 
   elif command == 'cancel':
     ret = timesheet_state.Get()
     if not ret:
-      print "cannot stop what has not been started."
+      print 'cannot stop what has not been started.'
       return
 
     logged_time, logged_message = ret
-    print "started", util.date2string(logged_time)
+    print 'started', util.date2string(logged_time)
     
-    yn = ''
-    while yn == '':
-      yn = raw_input("are you sure you want to cancel the entry? [y/N] ")
+    yn = raw_input('are you sure you want to cancel the entry? [y/N] ')
     if yn.lower() == 'y':
       timesheet_state.Clear()
-      print "cancelled timer"
+      print 'cancelled timer'
     else:
-      "aborted.  did not cancel the timer"
+      'aborted.  did not cancel the timer'
 
-  elif command == "status":
+  elif command == 'status':
     ret = timesheet_state.Get()
     if not ret:
-      print "cannot stop what has not been started."
+      print 'the timer is not going'
       return
 
     logged_time, logged_message = ret
     stop_time = datetime.today();
     print util.delta2string(stop_time - logged_time), logged_message
-    print "started at", util.date2string(logged_time)
+    print 'started at', util.date2string(logged_time)
+
+  elif command == 'import':
+    importer = Importer(timesheet_log)
+    importer.eternity(mbox_path)
+
+  elif command == 'week':
+    # set the range sum up
+    period_start = util.string2date('last ' + week_start)
+    period_stop = datetime.today()
+
+    # sum the range
+    string_start = util.date2string(period_start)
+    string_stop = util.date2string(period_stop)
+    dur = timedelta(0)
+    last_day = None
+    for row in [ x for x in timesheet_log.entries if x[0] <= string_stop and x[1] >= string_start ]:
+      entry_start = util.string2date(row[0])
+      entry_stop = util.string2date(row[1])
+      entry_dur = min(entry_stop, period_stop) - max(entry_start, period_start)
+      entry_message = row[2]
+      entry_day = row[0].split(' ')[0]
+      if entry_day != last_day:
+        if last_day != None:
+          print ' ' * len(entry_day) + ' Total ' + util.delta2string(day_dur, decimal=True, abbr=True)
+          print ''
+        display_day = entry_day
+        day_dur = timedelta(0)
+      else:
+        display_day = ' ' * len(entry_day)
+      last_day = entry_day
+      if len(entry_message) == 0:
+        entry_message = '-'
+      dur += entry_dur
+      day_dur += entry_dur
+      print display_day, util.delta2string(entry_dur, show_days=True, decimal=True, abbr=True) + '\t' + entry_message
+    if last_day != None:
+      print ' ' * len(entry_day) + ' Total ' + util.delta2string(day_dur, decimal=True, abbr=True)
+      print ''
+
+    # add the current timer if applicable
+    ret = timesheet_state.Get()
+    if ret:
+      logged_time, logged_message = ret
+      dur += period_stop - max(logged_time, period_start)
+
+    print util.delta2string(dur)
 
   else:
-    print "invalid command"
+    print 'invalid command'
     return
 
 
