@@ -108,7 +108,7 @@ def main(argv):
 
     if argument != '':
       # backdate the timer
-      starttime = util.string2date(argument)
+      starttime = util.interpretdate(argument)
       if starttime == None:
         print 'invalid date. try again.'
         return
@@ -148,7 +148,7 @@ def main(argv):
 
     if argument != '':
       # backdate the timer
-      stoptime = util.string2date(argument)
+      stoptime = util.interpretdate(argument)
       if stoptime == None:
         print 'invalid date. try again.'
         return
@@ -228,7 +228,8 @@ def main(argv):
 
   elif command == 'week':
     # set the range sum up
-    period_start = util.string2date('last ' + week_start)
+    period_start = util.interpretdate(week_start) - timedelta(days=6)
+    print period_start
     period_stop = datetime.today()
 
     # sum the range

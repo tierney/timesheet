@@ -1,20 +1,25 @@
 #!/usr/bin/env python
 
+from dateutil import parser
 from datetime import datetime
 from datetime import timedelta
 import subprocess
 
 # Converts string to formatted date by calling out to the unix date
 # utility.  Returns None if conversion failed.
-def string2date(string):
+def interpretdate(string):
   popen = subprocess.Popen('date -d "%s" +%%Y/%%m/%%d\ %%H:%%M:%%S' % string,
                            shell=True,
                            stdout=subprocess.PIPE)
   stdout_, stderr_ = popen.communicate()
   if popen.returncode != 0:
-    return None
+    return parser.parse(string)
   else:
-    return datetime.strptime(stdout_.strip(), '%Y/%m/%d %H:%M:%S')
+    return string2date(stdout_.strip())
+
+def string2date(s):
+  assert isinstance(s, str)
+  return datetime.strptime(s, '%Y/%m/%d %H:%M:%S')
 
 def date2string(date):
   assert isinstance(date, datetime)
