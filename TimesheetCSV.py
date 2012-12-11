@@ -29,7 +29,6 @@ class TimesheetCSV(object):
             if last == None:
               last = start_date
             elif start_date < last:
-              print row
               needs_sorting = True
               break
             else:
