@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from dateutil import parser
 from datetime import datetime
 from datetime import timedelta
 import subprocess
@@ -13,7 +12,11 @@ def interpretdate(string):
                            stdout=subprocess.PIPE)
   stdout_, stderr_ = popen.communicate()
   if popen.returncode != 0:
-    return parser.parse(string)
+    try:
+      __import__(dateutil)
+      return parser.parse(string)
+    except ImportError:
+      return None
   else:
     return string2date(stdout_.strip())
 
