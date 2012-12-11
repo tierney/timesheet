@@ -31,7 +31,7 @@ def create_config(config_path):
   config.set('Parameters', 'week_start', 'Monday 9:00am')
 
   config.add_section('Storage')
-  config.set('Storage', 'timesheet', '~/.timesheet.csv')
+  config.set('Storage', 'timesheet', '~/.timesheet')
   config.set('Storage', 'state', '~/.timesheet.state')
 
   config.add_section('Importing')
