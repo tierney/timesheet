@@ -12,6 +12,8 @@ from lib.TimesheetState import TimesheetState
 from lib.Importer import Importer
 
 def print_usage(prog):
+  print 'Welcome to timesheet!'
+  print ''
   print 'TIMER USAGE'
   print '  ' + prog + ' start [-m msg] [backdate]\tstart timing'
   print '  ' + prog + ' stop [-m msg] [backdate]\tstop timing'
@@ -32,7 +34,7 @@ def print_usage(prog):
   print ''
   print '  [backdate] takes natural expressions like "3 hours ago" using GNU date'
   print ''
-  print 'EXAMPLES'
+  print 'EXAMPLES OF BACKDATING'
   print '  ' + prog + ' start 5 minutes ago'
   print '  ' + prog + ' stop yesterday 3:25pm'
   print '  ' + prog + ' week 2 weeks ago'
@@ -40,7 +42,6 @@ def print_usage(prog):
   print '  ' + prog + ' since 3 days ago'
 
 def create_config(config_path):
-  print 'Welcome to timesheet!  I am creating the configuration file ' + config_path + '.\n'
   config = ConfigParser.ConfigParser()
   config.add_section('Parameters')
   config.set('Parameters', 'week_start', 'Monday 9:00am')
@@ -55,6 +56,7 @@ def create_config(config_path):
 
   with open(config_path, 'wb+') as configfile:
     config.write(configfile)
+  print 'I have created the configuration file ' + config_path + '.\n'
 
 def main(argv):
   prog = os.path.basename(argv[0])  # program name as called
@@ -68,6 +70,7 @@ def main(argv):
     argc = argc + 1
 
   week_start = None
+  week_hours = None
   timesheet_logfile = None
   timesheet_statefile = None
   mbox_path = None
@@ -82,15 +85,16 @@ def main(argv):
 
     try:
       week_start = config.get('Parameters', 'week_start')
+      week_hours = config.get('Parameters', 'week_hours')
       timesheet_logfile = config.get('Storage', 'timesheet')
       timesheet_statefile = config.get('Storage', 'state')
       mbox_path = config.get('Importing', 'mbox')
       success = True
     except ConfigParser.NoOptionError, err:
-      print 'error: missing option in ' + config_path
+      print 'There is an option missing in the configuration file.'
       create_config(config_path)
     except ConfigParser.NoSectionError, err:
-      print 'error: missing section in ' + config_path
+      print 'There is an option missing in the configuration file.'
       create_config(config_path)
 
   # get the timesheet command and its arguments
@@ -284,6 +288,21 @@ def main(argv):
       dur += period_stop - max(logged_time, period_start)
 
     print util.delta2string(dur)
+
+  elif command == 'day':
+    print 'coming soon!'
+
+  elif command == 'break':
+    print 'coming soon!'
+
+  elif command == 'done':
+    print 'coming soon!'
+
+  elif command == 'left':
+    print 'coming soon!'
+
+  elif command == 'since':
+    print 'coming soon!'
 
   else:
     print 'invalid command'
