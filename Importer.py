@@ -10,9 +10,6 @@ import mailbox
 import csv
 import StringIO
 
-from TimesheetLog import TimesheetLog
-from TimesheetState import TimesheetState
-
 from datetime import datetime
 from datetime import timedelta
 
