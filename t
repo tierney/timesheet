@@ -41,6 +41,58 @@ def print_usage(prog):
   print '  ' + prog + ' day yesterday'
   print '  ' + prog + ' since 3 days ago'
 
+def analyze(timesheet_log, timesheet_state, period_start, period_stop, breakdown=True, current=False, week_hours=None, left=False):
+  # sum the range
+  string_start = util.date2string(period_start)
+  string_stop = util.date2string(period_stop)
+  dur = timedelta(0)
+  last_day = None
+  for row in [ x for x in timesheet_log.entries if x[0] <= string_stop and x[1] >= string_start ]:
+    entry_start = util.string2date(row[0])
+    entry_stop = util.string2date(row[1])
+    entry_dur = min(entry_stop, period_stop) - max(entry_start, period_start)
+    entry_message = row[2]
+    entry_day = row[0].split(' ')[0]
+    if entry_day != last_day:
+      if last_day != None:
+        if breakdown:
+          print ' ' * len(entry_day) + ' Total ' + util.delta2string(day_dur, decimal=True, abbr=True)
+          print ''
+      display_day = entry_day
+      day_dur = timedelta(0)
+    else:
+      display_day = ' ' * len(entry_day)
+    last_day = entry_day
+    if len(entry_message) == 0:
+      entry_message = '-'
+    dur += entry_dur
+    day_dur += entry_dur
+    if breakdown:
+      print display_day, util.delta2string(entry_dur, show_days=True, decimal=True, abbr=True) + '\t' + entry_message
+  if last_day != None:
+    if breakdown:
+      print ' ' * len(entry_day) + ' Total ' + util.delta2string(day_dur, decimal=True, abbr=True)
+      print ''
+
+  if current:
+    # add the current timer if applicable
+    ret = timesheet_state.Get()
+    if ret:
+      logged_time, logged_message = ret
+      day_dur = period_stop - max(logged_time, period_start)
+      dur += day_dur
+      if breakdown:
+        print 'Current    ' + util.delta2string(day_dur)
+        print ''
+
+  if left:
+    time_left = max(timedelta(hours=week_hours) - dur, timedelta(0), timedelta(0))
+    time_left = util.delta2string(time_left)
+    print time_left, 'left'
+  else:
+    print util.delta2string(dur)
+
+
 def create_config(config_path):
   config = ConfigParser.ConfigParser()
   config.add_section('Parameters')
@@ -85,7 +137,7 @@ def main(argv):
 
     try:
       week_start = config.get('Parameters', 'week_start')
-      week_hours = config.get('Parameters', 'week_hours')
+      week_hours = int(config.get('Parameters', 'week_hours'))
       timesheet_logfile = config.get('Storage', 'timesheet')
       timesheet_statefile = config.get('Storage', 'state')
       mbox_path = config.get('Importing', 'mbox')
@@ -249,60 +301,50 @@ def main(argv):
   elif command == 'week':
     # set the range sum up
     period_start = util.interpretdate(week_start) - timedelta(days=6)
-    print period_start
     period_stop = datetime.today()
 
-    # sum the range
-    string_start = util.date2string(period_start)
-    string_stop = util.date2string(period_stop)
-    dur = timedelta(0)
-    last_day = None
-    for row in [ x for x in timesheet_log.entries if x[0] <= string_stop and x[1] >= string_start ]:
-      entry_start = util.string2date(row[0])
-      entry_stop = util.string2date(row[1])
-      entry_dur = min(entry_stop, period_stop) - max(entry_start, period_start)
-      entry_message = row[2]
-      entry_day = row[0].split(' ')[0]
-      if entry_day != last_day:
-        if last_day != None:
-          print ' ' * len(entry_day) + ' Total ' + util.delta2string(day_dur, decimal=True, abbr=True)
-          print ''
-        display_day = entry_day
-        day_dur = timedelta(0)
-      else:
-        display_day = ' ' * len(entry_day)
-      last_day = entry_day
-      if len(entry_message) == 0:
-        entry_message = '-'
-      dur += entry_dur
-      day_dur += entry_dur
-      print display_day, util.delta2string(entry_dur, show_days=True, decimal=True, abbr=True) + '\t' + entry_message
-    if last_day != None:
-      print ' ' * len(entry_day) + ' Total ' + util.delta2string(day_dur, decimal=True, abbr=True)
-      print ''
-
-    # add the current timer if applicable
-    ret = timesheet_state.Get()
-    if ret:
-      logged_time, logged_message = ret
-      dur += period_stop - max(logged_time, period_start)
-
-    print util.delta2string(dur)
+    if argument == '':
+      # Current week
+      analyze(timesheet_log, timesheet_state, period_start, period_stop, current=True)
+    else:
+      print 'coming soon!'
 
   elif command == 'day':
-    print 'coming soon!'
+    # set the range sum up
+    period_start = util.interpretdate('today 00:00')
+    period_stop = datetime.today()
+
+    if argument == '':
+      # Current week
+      analyze(timesheet_log, timesheet_state, period_start, period_stop, current=True)
+    else:
+      print 'coming soon!'
 
   elif command == 'break':
     print 'coming soon!'
 
   elif command == 'done':
-    print 'coming soon!'
+     # set the range sum up
+     period_start = util.interpretdate(week_start) - timedelta(days=6)
+     period_stop = datetime.today()
+     analyze(timesheet_log, timesheet_state, period_start, period_stop, current=True, breakdown=False)
 
   elif command == 'left':
-    print 'coming soon!'
+     # set the range sum up
+     period_start = util.interpretdate(week_start) - timedelta(days=6)
+     period_stop = datetime.today()
+     analyze(timesheet_log, timesheet_state, period_start, period_stop, current=True, breakdown=False, week_hours=week_hours, left=True)
 
   elif command == 'since':
-    print 'coming soon!'
+    if argument == '':
+      print 'please specify a date'
+    else:
+      # set the range sum up
+      period_start = util.interpretdate(argument)
+      period_stop = datetime.today()
+
+      # Current week
+      analyze(timesheet_log, timesheet_state, period_start, period_stop, current=True)
 
   else:
     print 'invalid command'
