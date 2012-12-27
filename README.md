@@ -22,7 +22,7 @@ Analyze your work in detail:
 * `t today`
 * `t yesterday`
 * `t since 3 days ago`
-* `t week -1`
+* `t week 2 weeks ago`
 
 Customization
 -------------
