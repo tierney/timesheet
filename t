@@ -6,10 +6,10 @@ import ConfigParser
 from datetime import datetime
 from datetime import timedelta
 
+import lib.util
 from lib.TimesheetCSV import TimesheetCSV
 from lib.TimesheetState import TimesheetState
 from lib.Importer import Importer
-import lib.util
 
 def print_usage(prog):
   print 'TIMER USAGE'
