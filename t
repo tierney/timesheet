@@ -18,15 +18,33 @@ def print_usage(prog):
   print '  ' + prog + ' message msg\t\t\tdescribe this period'
   print '  ' + prog + ' cancel\t\t\tcancel this period'
   print ''
+  print '  [backdate] takes natural expressions like "3 hours ago" using GNU date'
+  print '  [msg] is a string describing the time period'
+  print ''
   print 'REPORTING'
   print '  ' + prog + ' status\t\t\tcurrent period\'s time'
-  print '  ' + prog + ' week\t\t\tbreakdown of week by day'
+  print '  ' + prog + ' week [backdate]\t\tbreakdown of this week by day'
+  print '  ' + prog + ' day [backdate]\t\tbreakdown of today\'s work'
+  print '  ' + prog + ' break\t\t\ttime since last period'
+  print '  ' + prog + ' done\t\t\thours done this week'
+  print '  ' + prog + ' left\t\t\thours left this week'
+  print '  ' + prog + ' since [backdate]\t\twork done since a given date'
+  print ''
+  print '  [backdate] takes natural expressions like "3 hours ago" using GNU date'
+  print ''
+  print 'EXAMPLES'
+  print '  ' + prog + ' start 5 minutes ago'
+  print '  ' + prog + ' stop yesterday 3:25pm'
+  print '  ' + prog + ' week 2 weeks ago'
+  print '  ' + prog + ' day yesterday'
+  print '  ' + prog + ' since 3 days ago'
 
 def create_config(config_path):
   print 'Welcome to timesheet!  I am creating the configuration file ' + config_path + '.\n'
   config = ConfigParser.ConfigParser()
   config.add_section('Parameters')
   config.set('Parameters', 'week_start', 'Monday 9:00am')
+  config.set('Parameters', 'week_hours', '40')
 
   config.add_section('Storage')
   config.set('Storage', 'timesheet', '~/.timesheet')
