@@ -76,14 +76,13 @@ def delta2string(delta, show_days=False, decimal=False, abbr=False):
         pl = 's'
       units = ' minute' + pl
     return number_str + units
-  elif seconds > 0:
+  else:
     number_str = "%d" % (seconds)
     if abbr:
       units = ' sec'
     else:
-      if seconds > 1:
+      if not seconds == 1:
         pl = 's'
       units = ' second' + pl
     return number_str + units
-  else:
-    return None
+
