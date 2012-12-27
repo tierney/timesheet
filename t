@@ -23,7 +23,7 @@ def print_usage(prog):
   print '  ' + prog + ' week\t\t\tbreakdown of week by day'
 
 def create_config(config_path):
-  print 'creating config file: ' + config_path
+  print 'Welcome to timesheet!  I am creating the configuration file ' + config_path + '.\n'
   config = ConfigParser.ConfigParser()
   config.add_section('Parameters')
   config.set('Parameters', 'week_start', 'Monday 9:00am')
