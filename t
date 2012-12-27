@@ -6,7 +6,7 @@ import ConfigParser
 from datetime import datetime
 from datetime import timedelta
 
-import lib.util
+import lib.util as util
 from lib.TimesheetCSV import TimesheetCSV
 from lib.TimesheetState import TimesheetState
 from lib.Importer import Importer
@@ -14,13 +14,13 @@ from lib.Importer import Importer
 def print_usage(prog):
   print 'TIMER USAGE'
   print '  ' + prog + ' start [-m msg] [backdate]\tstart timing'
-  print '  ' + prog + ' stop [-m msg] [backdate]\t\tstop timing'
+  print '  ' + prog + ' stop [-m msg] [backdate]\tstop timing'
   print '  ' + prog + ' message msg\t\t\tdescribe this period'
-  print '  ' + prog + ' cancel\t\t\t\tcancel this period'
+  print '  ' + prog + ' cancel\t\t\tcancel this period'
   print ''
   print 'REPORTING'
-  print '  ' + prog + ' status\t\t\t\tthis period\'s time'
-  print '  ' + prog + ' week\t\t\t\tbreakdown of week by day'
+  print '  ' + prog + ' status\t\t\tcurrent period\'s time'
+  print '  ' + prog + ' week\t\t\tbreakdown of week by day'
 
 def create_config(config_path):
   print 'creating config file: ' + config_path
