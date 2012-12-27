@@ -2,26 +2,25 @@
 
 import os
 import sys
-import util
 import ConfigParser
 from datetime import datetime
 from datetime import timedelta
 
-from TimesheetCSV import TimesheetCSV
-from TimesheetState import TimesheetState
-from Importer import Importer
+from lib.TimesheetCSV import TimesheetCSV
+from lib.TimesheetState import TimesheetState
+from lib.Importer import Importer
+import lib.util
 
 def print_usage(prog):
-  print 'USAGE'
-  print prog + ' start [-m msg] [backdate]\tstart timing'
-  print prog + ' stop [-m msg] [backdate]\tstop timing'
-  print prog + ' message msg\t\t\tdescribe this period'
-  print prog + ' cancel\t\t\tcancel this period'
+  print 'TIMER USAGE'
+  print '  ' + prog + ' start [-m msg] [backdate]\tstart timing'
+  print '  ' + prog + ' stop [-m msg] [backdate]\t\tstop timing'
+  print '  ' + prog + ' message msg\t\t\tdescribe this period'
+  print '  ' + prog + ' cancel\t\t\t\tcancel this period'
   print ''
-  print prog + ' status\t\t\tthis period\'s time'
-  print prog + ' week\t\t\tbreakdown of week by day'
-  print ''
-  print prog + ' import\t\t\timport eternity csv from mbox'
+  print 'REPORTING'
+  print '  ' + prog + ' status\t\t\t\tthis period\'s time'
+  print '  ' + prog + ' week\t\t\t\tbreakdown of week by day'
 
 def create_config(config_path):
   print 'creating config file: ' + config_path
