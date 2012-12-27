@@ -3,14 +3,13 @@
 import os
 import sys
 import util
-
 import ConfigParser
+from datetime import datetime
+from datetime import timedelta
+
 from TimesheetCSV import TimesheetCSV
 from TimesheetState import TimesheetState
 from Importer import Importer
-
-from datetime import datetime
-from datetime import timedelta
 
 def print_usage(prog):
   print 'USAGE'
