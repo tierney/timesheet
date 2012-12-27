@@ -27,7 +27,7 @@ Analyze your work in detail:
 Customization
 -------------
 
-* The configuration files is in ~/.timesheetrc
-  * work week
-  * hours per week
-* The timesheet is a CSV format in `~/.timesheet`.
+* You can change the following in ~/.timesheetrc
+  * Work week starting day
+  * Hours per week
+* The timesheet is a CSV file at `~/.timesheet`
