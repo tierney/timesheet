@@ -1,100 +1,33 @@
-Setup
-=====
+timesheet
+=========
 
-Open t in an editor and tweek the variables to set the location of the
-timesheet and define your workweek.
+Basic Usage
+-----------
 
-Copy or symlink t to be in your PATH for easy execution.
+Start timing with `t start`.  Stop with `t stop`.
+Set a message anytime with `t message` or when stopping the timer. 
+Cancel timing with `t cancel`.
+Check on the current timer with `t status` and get a break-down of the week with `t week`.
+If you forget to start or stop the timer, backdate like this: `t start 10 minutes ago`.  We use GNU's `date` to
+parse [time expressions](http://www.gnu.org/software/coreutils/manual/coreutils.html#Date-input-formats).
 
+Advanced Usage
+--------------
 
-Tutorial
-========
+See how long you've been on break with `t break`.  See how many hours you've worked this week with `t done`
+and how much time is left in the week with `t left`.  `timesheet` defaults to a 40 hour work-week.
+See the customization section below to change this.
 
-Start timing
+Analyze your work in detail:
+* `t today`
+* `t yesterday`
+* `t since 3 days ago`
+* `t week 2 weeks ago`
 
->  t start
+Customization
+-------------
 
-Stop timing and it will ask you for a note about the work
-
->  t stop
-
-Start a new timer even when the timer is running
-
->  t start
-
-Add a message anytime during the time period
-
->  t message
-
-Check current timer
-
->  t status
-
-See how many much you are working, e.g.,
-
->  t today
->
->  t yesterday
->
->  t week
->
->  t since 3 days ago
-
-See how many hours you've done this week and how much is left
-
->  t done
->
->  t left
-
-See how much time you've been on break
-
->  t break
-
-Design Goals
-============
-
-1. <b>Painless timing</b>
-
- > This timer stays out of your way.  Just type "t start" and "t stop"
- > to use the timer.  This is the most you need to time yourself.  No
- > need to think about writing specific times, adding notes about the
- > work before you even start, or selecting different timesheets.  Just
- > type "start" and begin working. Just timing yourself.  Adding notes is
- > optional and encouraged.  When you stop, you are asked for a message
- > to put with your time spent. Start a new timer at any point.  Any
- > existing timer will automatically be stopped after warning you.
-
-2. <b>Forgiving</b>
-
- > If you are like me, you may not know exactly what you'll work on
- > before you start.  Add a note anytime with "t message".  If you forget
- > to add a note, you'll be asked when stopping the timer.  If you've
- > forgotten to start timing, don't worry use "t backstart 15 minutes
- > ago" to backdate the timer.  If you forgot to stop timing, type "t
- > stop 5 minutes ago".  If you really didn't do any work, cancel with "t
- > cancel".
-
-
-3. <b>Easy time analysis</b>
-
- > Rich feedback on your work done.  Hours today, yesterday, last week.
- > Time on break.  How much time you've put in and how much time you have
- > left to do.
-
-
-Conventions
-===========
-
-* For the analysis, there is a notion of a work week and a work day.
-You specify the starting day of the week and how many working hours
-are in it.
-
-
-Storage format
-==============
-
-* The timesheet is stored in plain text with one entry per line
-containing the start date/time, stop date/time, and a description.
-This makes it easy to write your own analysis tools and even read and
-edit the sheet manually.
-
+* You can change the following in `~/.timesheetrc`
+  * Work week starting day
+  * Hours per week
+* The timesheet is a CSV file at `~/.timesheet`
